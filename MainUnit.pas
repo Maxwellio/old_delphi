@@ -1125,7 +1125,7 @@ begin
          else begin
             FloatToStr(aVal);
             result:= aVal;
-         end;
+         end; 
    except
         on E:Exception do
            MessageDlg( 'Неправильно введено цифровое значение:'+ aVal +'. Функция isNumber.'+#13#10+e.message , mtInformation, [mbOk], 0);
