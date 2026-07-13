@@ -18,7 +18,7 @@ type
     lbHeaderRegKey: TLabel;
     lbRegKey: TLabel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure ProductNameMouseEnter(Sender: TObject);
+    procedure ProductNameMouseEnter(Sender: TObject); 
     procedure ProductNameMouseLeave(Sender: TObject);
 
   public
