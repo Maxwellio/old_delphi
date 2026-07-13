@@ -51,8 +51,8 @@ type
     btnApply: TBitBtn;
     procedure SpeedButton3Click(Sender: TObject);
     procedure OptionsTreeViewChange(Sender: TObject; Node: TTreeNode);
-    {!           (     )                                                      ,
-                       "      "}
+    {!записываем (новые) значения во все связанные переменные и где необходимо,
+    вызывает изменения "налету"}
     procedure ApplyChanges(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnOkClick(Sender: TObject);
@@ -65,14 +65,14 @@ type
     procedure sCheckBox3Click(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
   private
-    {                                    ListBox}
+    {добавляем горизонтальный скроллер в ListBox}
     //procedure CreateScroll(ListBoxN: TCustomListBox);
-    {!          ,                                               }
+    {!вызывается, когда дезигнер переводит форму в режим дизайна}
     procedure WMOnDsgnMode(var Message:TMessage); message WM_OnDsgnMode;
-    {!                                       }
+    {!вызывается при выходе из режима дизайна}
     procedure WMOffDsgnMode(var Message:TMessage); message WM_OffDsgnMode;
   public
-    {                                         ,                           }
+    {установка визуального состояния контролов, соответствующих переменных}
     procedure LoadLinkControls;
     constructor Create(AOwner: TComponent); override;
   end;
@@ -92,14 +92,14 @@ const
 var
   outdir: string;
 begin
-  //                                 ,           outdir=                           
-  if {1   } SelectDirectory('                                    ', '', outdir) then
-  //{2   } outdir := EdRepShPath.Text;
+  //вызываем диалог выбора директории, на выходе outdir=полный путь к файлу шаблона
+  if {1вар} SelectDirectory('Выберите папку с системой отчетности', '', outdir) then
+  //{2вар} outdir := EdRepShPath.Text;
   //if SelectDirectory(outdir, [sdAllowCreate{, sdPerformCreate, sdPrompt}], SELDIRHELP ) then
   edNewPath.Text := outdir;
 end;
 
-{                                    ListBox}
+{добавляем горизонтальный скроллер в ListBox}
 (*procedure TfrmSetOptions.CreateScroll(ListBoxN: TCustomListBox);
 var i, MaxWidth: integer;
 begin
@@ -107,28 +107,28 @@ begin
   for i := 0 to ListBoxN.Items.Count - 1 do
     if MaxWidth < ListBoxN.Canvas.TextWidth(ListBoxN.Items.Strings[i]) then
       MaxWidth := ListBoxN.Canvas.TextWidth(ListBoxN.Items.Strings[i]);
-  //SendMessage(ListBoxN.Handle, LB_SETHORIZONTALEXTENT, MaxWidth+5, 0); //                       
-  ListBoxN.ScrollWidth := MaxWidth+5; //                            -  
+  //SendMessage(ListBoxN.Handle, LB_SETHORIZONTALEXTENT, MaxWidth+5, 0); //решение через сообщение
+  ListBoxN.ScrollWidth := MaxWidth+5; //решение через стандартное св-во
 end;*)
 
-{                                                       }
+{срабатывает при переходе с одного узла дерева на другое}
 procedure TfrmSetOptions.OptionsTreeViewChange(Sender: TObject; Node: TTreeNode);
 var i: integer;
 begin
-  if Node.Text='     ' then
+  if Node.Text='Опции' then
   begin
     GlobalSettingPanel.BringToFront;
     GlobalSettingPanel.Align := alClient;
     GlobalSettingPanel.Show;
   end
   else
-  if Node.Text='                 ' then
+  if Node.Text='Единицы измерений' then
   begin
     EdizmPanel.BringToFront;
     EdizmPanel.Align := alClient;
     EdizmPanel.Show;
   end
-  else //                                
+  else //встали на необрабатываемую ветку
     begin
       for i := 0 to MainPanel.ControlCount-1 do MainPanel.Controls[i].Hide;
     end
@@ -140,7 +140,7 @@ var
   str,StrList,tv : TStrings;
   //files: TSearchRec;
 begin
-   //********************                    a;
+   //********************загрузка строк поискa;
    str:= TStringList.Create();
    str.Clear;
    str.Delimiter:=';';
@@ -149,21 +149,21 @@ begin
    for i:=0 to (str.Count-1) do
    lstboxPath.Items.Add(str.Strings[i]);
    sCheckBox3.Checked := OsAuthent;//OsAuthent
-   sCheckBox4.Checked := AutoScale;//                                               
-   sCheckBox1.checked := AutoSaveCalcNorms;//                   
+   sCheckBox4.Checked := AutoScale;//автомасштабирование под любое разрешение экрана
+   sCheckBox1.checked := AutoSaveCalcNorms;//автосохранение норм
    //chBAutoCalcBegOperDate.checked := AutoCalcBegOperDate;
-   //*********************               
+   //*********************загружаем скины
 //   edSkinDirectory.Text := frmMain.sSkinManager1.SkinDirectory{SkinDirectory};
 //   frmMain.sSkinManager1.GetSkinNames( sComboBox1.Items );
 //   sComboBox1.ItemIndex := sComboBox1.Items.IndexOf( frmMain.sSkinManager1.SkinName{SkinName} );
-   //*******************                          ,        ,                  
+   //*******************загружаем имя пользователя, пароль , БД   из ини файла
    LabeledEdit3.Text:= oraPwd;
    LabeledEdit2.Text := oraUser;
    LabeledEdit1.Text := DataBase;
-   //******************                           
+   //******************загрузка внешних плиложений
    StringGrid1.RowCount:=1;
-   StringGrid1.Cells[0,0]:='                    ';
-   StringGrid1.Cells[1,0]:='                          ';
+   StringGrid1.Cells[0,0]:='Название пункта меню';
+   StringGrid1.Cells[1,0]:='Команда запуска приложения';
    //StringGrid1.Cells[0,1]:=Vars.Values['AppItems'];
    StrList := TStringList.Create;
    tv := TStringList.Create;
@@ -171,7 +171,7 @@ begin
    //tv.Delimiter := ',';
    //StrList.DelimitedText := AppItems;
    StrToArrays(AppItems, ';', 1, StrList);
-   {                                         }
+   {собираем имена файлов плугинов расширения}
    for i := 0 to StrList.Count-1 do
    begin
      StringGrid1.RowCount:=StringGrid1.RowCount+1;
@@ -181,10 +181,10 @@ begin
      StringGrid1.Cells[1,i+1]:= tv[1]
    end;
    if StrList.Count>0 then StringGrid1.FixedRows:=1;
-   //end                            
-   {                 }
+   //end загрузка внешних приложений
+   {единицы измерения}
    scbEdIzm.ItemIndex := scbEdIzm.Items.IndexOfObject( TObject( OutEdizm ) );
-   sEdHtmlPath.Text := HtmlPath; //                    
+   sEdHtmlPath.Text := HtmlPath; //путь поиска оперкарт
 
    tv.Free;
    strlist.Free;
@@ -202,33 +202,33 @@ end;*)
 procedure TfrmSetOptions.ApplyChanges(Sender: TObject);
 var i:integer;
 begin
-  //*******************                          ,        ,   
+  //*******************сохраняем имя пользователя, пароль , БД
   DataBase := LabeledEdit1.Text;
   oraUser := LabeledEdit2.Text;
   oraPwd := LabeledEdit3.Text;
-  OsAuthent := sCheckBox3.Checked;//OS               
-  AutoSaveCalcNorms := sCheckBox1.checked; //                               
-  AutoScale := sCheckBox4.Checked; //                                               
+  OsAuthent := sCheckBox3.Checked;//OS аутентификация
+  AutoSaveCalcNorms := sCheckBox1.checked; //автосохранение вычисленных норм
+  AutoScale := sCheckBox4.Checked; //автомасштабирование под любое разрешение экрана
   //AutoCalcBegOperDate := chBAutoCalcBegOperDate.checked;
-  //*******************              
+  //*******************сохраняем пути
   path := '';
   for i:=0 to (lstboxPath.Count-1) do
     path := path+lstboxPath.Items.Strings[i]+';';
-  Delete(path, length(path), 1); //                                 
-  //**************************      
+  Delete(path, length(path), 1); //убираем последнюю точку с запятой
+  //************************** скины
 //  frmMain.sSkinManager1.SkinDirectory := edSkinDirectory.Text;
 //  frmMain.sSkinManager1.SkinName := sComboBox1.Items[sComboBox1.ItemIndex];
 //  {SkinName}frmMain.sSkinManager1.skinname := sComboBox1.Items[sComboBox1.ItemIndex];
 //  {SkinDirectory}frmMain.sSkinManager1.skinDirectory := edSkinDirectory.Text;
-  //*****************************                           
+  //*****************************загрузка внешних приложений
   AppItems := '';
   for i := 1 to StringGrid1.RowCount-1 do
     AppItems := AppItems+StringGrid1.Cells[0,i]+','+StringGrid1.Cells[1,i]+';';
-  Delete(AppItems, length(AppItems), 1);//                                         
-  {                                                      }
+  Delete(AppItems, length(AppItems), 1);//удаляем лишний разделитель записей справа
+  {перезаписываем команды пунктов меню внешних приложений}
   frmMain.SetCallExpApp;
 
-  {                           }
+  {новый код единицы измерения}
   OutEdizm := LongInt( scbEdIzm.Items.Objects[scbEdIzm.Items.IndexOf(scbEdIzm.Text)] );
   HtmlPath := sEdHtmlPath.Text;
 end;
@@ -243,8 +243,8 @@ end;
 
 procedure TfrmSetOptions.btnOkClick(Sender: TObject);
 begin
-  ApplyChanges(self); //                                                 
-  {                                        }
+  ApplyChanges(self); //пишем в простейшие переменные и связанные объекты
+  {сохраняем настройки в файле конфигурации}
   frmMain.WriteToFile(PathAndCfgFileName);
   close;
 end;
@@ -322,29 +322,29 @@ end;
 constructor TfrmSetOptions.Create(AOwner: TComponent);
 var fname: string;
 begin
-  //                              ,                                     
+  //если есть файл с конфигурацией, читаем все настройки объектов оттуда
   fname := ExtractFilePath(PathAndCfgFileName)+ClassName+FrmExtUserRes;
-  if FileExists( fname ) then //                    
+  if FileExists( fname ) then //файл настроек найден
     begin
-      CreateNew(AOwner);             //                  
-//      LoadComponentFromTextFile(self, fname); //              mdi-    
+      CreateNew(AOwner);             //такой способ хорош
+//      LoadComponentFromTextFile(self, fname); //только для не mdi-окон
       btnOk.Repaint;
       btnCancel.Repaint;
       btnApply.Repaint;
-      Caption := '                   ';
+      Caption := 'Настройки программы';
     end
-  else //                       
-    inherited Create(AOwner); //                                
+  else //файл настроек не найден
+    inherited Create(AOwner); //вызываем стандартный конструктор
 
-  scbEdIzm.AddItem('       ',TObject(217));
-  scbEdIzm.AddItem('      ',TObject(218));
-  scbEdIzm.AddItem('    ',TObject(219));
-  scbEdIzm.AddItem('     ',TObject(220));
+  scbEdIzm.AddItem('Секунды',TObject(217));
+  scbEdIzm.AddItem('Минуты',TObject(218));
+  scbEdIzm.AddItem('Часы',TObject(219));
+  scbEdIzm.AddItem('Сутки',TObject(220));
 end;
 
 procedure TfrmSetOptions.WMOffDsgnMode(var Message: TMessage);
 begin
-  Caption := '                   ';
+  Caption := 'Настройки программы';
 end;
 
 procedure TfrmSetOptions.WMOnDsgnMode(var Message: TMessage);
@@ -354,7 +354,7 @@ begin
   begin
     if (Components[I].ClassName='TacProvider')
       or (Components[I].ClassName='TsSkinProvider') then
-      RemoveComponent(Components[I]);//                          MDI-child     
+      RemoveComponent(Components[I]);//так делать только если не MDI-child окно
   end;*)
   caption := '';
 end;
