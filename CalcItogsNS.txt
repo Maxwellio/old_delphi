@@ -1,0 +1,26 @@
+function TOVNITreeGrid.CalcItogsNS(aNode: TGvTreeNode; const aFieldNm : string): double;
+var i   : integer;
+begin
+ Result := 0;
+ if (aNode.fKey = -2) and (aNode.Count = 0) then // anee oieuei naiue ei?iaaie yeaiaio, oi exit;
+ begin
+   exit;
+ end;
+
+ if (aNode.Count = 0) then
+   Result := StrToFloatdef(aNode.Cells[Fields.IndexByName[aFieldNm]].Value,0)
+ else
+ begin
+   for i := 0 to (aNode.Count - 1) do
+     if (aNode.Items[i].Count > 0) then // ocae
+       Result := Result + CalcItogsNS(aNode.Items[i], aFieldNm)
+     else
+       Result := Result + StrToFloatdef(aNode.Items[i].Cells[Fields.IndexByName[aFieldNm]].Value,0);
+
+   if (aNode.fKey <> -2) and (Result<>0) then 
+     aNode.Cells[Fields.IndexByName[aFieldNm]].Value := FloatToStr(Result);
+
+   if (aNode.fKey <> -2) and (Result=0) then                // 2025
+     aNode.Cells[Fields.IndexByName[aFieldNm]].Value := ''; // 2025
+ end; {if aNode.Count = 0 then}
+end;
